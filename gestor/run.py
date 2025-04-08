@@ -1,4 +1,10 @@
+import sys
 import menu
+import ui
 
 if __name__ == "__main__":
-    menu.iniciar()
+    if "-t" in sys.argv:
+        menu.iniciar()
+    else:
+        app = ui.MainWindow()
+        app.mainloop()
