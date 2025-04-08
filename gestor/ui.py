@@ -1,162 +1,82 @@
-from tkinter import *
-from tkinter import ttk
-from tkinter.messagebox import askokcancel, WARNING
+import gradio as gr
 import database as db
 import helpers
 
-class MainWindow(Tk):
-    def __init__(self):
-        super().__init__()
-        self.title("Gestor de Clientes")
-        self.build()
+# Función para mostrar la lista de clientes como DataFrame
+def listar_clientes():
+    return [[c.dni, c.nombre, c.apellido] for c in db.Clientes.lista]
 
-    def build(self):
-        # Frame superior con Treeview
-        frame = Frame(self)
-        frame.pack(pady=10)
+# Función para buscar cliente
+def buscar_cliente(dni):
+    cliente = db.Clientes.buscar(dni.upper())
+    return f"{cliente}" if cliente else "Cliente no encontrado"
+
+# Función para crear cliente
+def crear_cliente(dni, nombre, apellido):
+    dni = dni.upper()
+    if not helpers.dni_valido(dni, db.Clientes.lista):
+        return "DNI inválido o ya existe", listar_clientes()
+    if not (2 <= len(nombre) <= 30 and nombre.isalpha()) or not (2 <= len(apellido) <= 30 and apellido.isalpha()):
+        return "Nombre o apellido inválidos", listar_clientes()
+    db.Clientes.crear(dni, nombre.capitalize(), apellido.capitalize())
+    return "Cliente creado correctamente", listar_clientes()
+
+# Función para modificar cliente
+def modificar_cliente(dni, nombre, apellido):
+    dni = dni.upper()
+    cliente = db.Clientes.modificar(dni, nombre.capitalize(), apellido.capitalize())
+    return "Cliente modificado" if cliente else "Cliente no encontrado", listar_clientes()
+
+# Función para borrar cliente
+def borrar_cliente(dni):
+    dni = dni.upper()
+    cliente = db.Clientes.borrar(dni)
+    return "Cliente borrado" if cliente else "Cliente no encontrado", listar_clientes()
+
+# Interfaz de Gradio
+with gr.Blocks(title="Gestor de Clientes") as demo:
+    gr.Markdown("# Gestor de Clientes")
+    
+    # Tabla de clientes
+    tabla = gr.Dataframe(headers=["DNI", "Nombre", "Apellido"], value=listar_clientes)
+    
+    with gr.Row():
+        # Buscar
+        with gr.Column():
+            gr.Markdown("### Buscar Cliente")
+            dni_buscar = gr.Textbox(label="DNI (2 nums + 1 letra)")
+            buscar_btn = gr.Button("Buscar")
+            buscar_output = gr.Textbox(label="Resultado")
+            buscar_btn.click(buscar_cliente, inputs=dni_buscar, outputs=buscar_output)
         
-        self.treeview = ttk.Treeview(frame, columns=("DNI", "Nombre", "Apellido"), show="headings")
-        self.treeview.heading("DNI", text="DNI")
-        self.treeview.heading("Nombre", text="Nombre")
-        self.treeview.heading("Apellido", text="Apellido")
-        self.treeview.column("DNI", width=100, anchor=CENTER)
-        self.treeview.column("Nombre", width=150, anchor=CENTER)
-        self.treeview.column("Apellido", width=150, anchor=CENTER)
+        # Crear
+        with gr.Column():
+            gr.Markdown("### Crear Cliente")
+            dni_crear = gr.Textbox(label="DNI")
+            nombre_crear = gr.Textbox(label="Nombre")
+            apellido_crear = gr.Textbox(label="Apellido")
+            crear_btn = gr.Button("Crear")
+            crear_output = gr.Textbox(label="Resultado")
+            crear_btn.click(crear_cliente, inputs=[dni_crear, nombre_crear, apellido_crear], outputs=[crear_output, tabla])
+    
+    with gr.Row():
+        # Modificar
+        with gr.Column():
+            gr.Markdown("### Modificar Cliente")
+            dni_mod = gr.Textbox(label="DNI")
+            nombre_mod = gr.Textbox(label="Nuevo Nombre")
+            apellido_mod = gr.Textbox(label="Nuevo Apellido")
+            mod_btn = gr.Button("Modificar")
+            mod_output = gr.Textbox(label="Resultado")
+            mod_btn.click(modificar_cliente, inputs=[dni_mod, nombre_mod, apellido_mod], outputs=[mod_output, tabla])
         
-        # Cargar datos iniciales
-        for cliente in db.Clientes.lista:
-            self.treeview.insert("", "end", iid=cliente.dni, values=(cliente.dni, cliente.nombre, cliente.apellido))
-        
-        # Scrollbar
-        scrollbar = Scrollbar(frame, orient=VERTICAL, command=self.treeview.yview)
-        self.treeview.configure(yscrollcommand=scrollbar.set)
-        scrollbar.pack(side=RIGHT, fill=Y)
-        self.treeview.pack()
-
-        # Frame inferior con botones
-        frame = Frame(self)
-        frame.pack(pady=10)
-        Button(frame, text="Crear", command=self.create_client_window).grid(row=0, column=0, padx=5)
-        Button(frame, text="Modificar", command=self.edit_client_window).grid(row=0, column=1, padx=5)
-        Button(frame, text="Borrar", command=self.delete).grid(row=0, column=2, padx=5)
-
-    def delete(self):
-        selected = self.treeview.focus()
-        if selected:
-            valores = self.treeview.item(selected, "values")
-            if askokcancel("Confirmación", f"¿Borrar a {valores[1]} {valores[2]}?", icon=WARNING):
-                self.treeview.delete(selected)
-                db.Clientes.borrar(valores[0])
-
-    def create_client_window(self):
-        CreateClientWindow(self)
-
-    def edit_client_window(self):
-        selected = self.treeview.focus()
-        if selected:
-            EditClientWindow(self)
-
-class CreateClientWindow(Toplevel):
-    def __init__(self, parent):
-        super().__init__(parent)
-        self.title("Crear Cliente")
-        self.parent = parent
-        self.build()
-
-    def build(self):
-        frame = Frame(self)
-        frame.pack(padx=10, pady=10)
-        
-        Label(frame, text="DNI (2 nums, 1 letra):").grid(row=0, column=0)
-        Label(frame, text="Nombre (2-30 chars):").grid(row=0, column=1)
-        Label(frame, text="Apellido (2-30 chars):").grid(row=0, column=2)
-        
-        self.dni = Entry(frame)
-        self.dni.grid(row=1, column=0)
-        self.nombre = Entry(frame)
-        self.nombre.grid(row=1, column=1)
-        self.apellido = Entry(frame)
-        self.apellido.grid(row=1, column=2)
-        
-        frame = Frame(self)
-        frame.pack(pady=10)
-        self.crear_btn = Button(frame, text="Crear", command=self.create_client, state=DISABLED)
-        self.crear_btn.grid(row=0, column=0, padx=5)
-        Button(frame, text="Cancelar", command=self.destroy).grid(row=0, column=1, padx=5)
-        
-        self.validaciones = [False, False, False]
-        self.dni.bind("<KeyRelease>", lambda ev: self.validate(ev, 0))
-        self.nombre.bind("<KeyRelease>", lambda ev: self.validate(ev, 1))
-        self.apellido.bind("<KeyRelease>", lambda ev: self.validate(ev, 2))
-
-    def validate(self, event, index):
-        valor = event.widget.get()
-        if index == 0:
-            valido = helpers.dni_valido(valor, db.Clientes.lista)
-        else:
-            valido = valor.isalpha() and 2 <= len(valor) <= 30
-        event.widget.config(bg="green" if valido else "red")
-        self.validaciones[index] = valido
-        self.crear_btn.config(state=NORMAL if all(self.validaciones) else DISABLED)
-
-    def create_client(self):
-        dni, nombre, apellido = self.dni.get(), self.nombre.get(), self.apellido.get()
-        db.Clientes.crear(dni, nombre, apellido)
-        self.parent.treeview.insert("", "end", iid=dni, values=(dni, nombre, apellido))
-        self.destroy()
-
-class EditClientWindow(Toplevel):
-    def __init__(self, parent):
-        super().__init__(parent)
-        self.title("Modificar Cliente")
-        self.parent = parent
-        self.build()
-
-    def build(self):
-        selected = self.parent.treeview.focus()
-        valores = self.parent.treeview.item(selected, "values")
-        
-        frame = Frame(self)
-        frame.pack(padx=10, pady=10)
-        
-        Label(frame, text="DNI (no editable):").grid(row=0, column=0)
-        Label(frame, text="Nombre (2-30 chars):").grid(row=0, column=1)
-        Label(frame, text="Apellido (2-30 chars):").grid(row=0, column=2)
-        
-        self.dni = Entry(frame)
-        self.dni.insert(0, valores[0])
-        self.dni.config(state=DISABLED)
-        self.dni.grid(row=1, column=0)
-        self.nombre = Entry(frame)
-        self.nombre.insert(0, valores[1])
-        self.nombre.grid(row=1, column=1)
-        self.apellido = Entry(frame)
-        self.apellido.insert(0, valores[2])
-        self.apellido.grid(row=1, column=2)
-        
-        frame = Frame(self)
-        frame.pack(pady=10)
-        self.actualizar_btn = Button(frame, text="Actualizar", command=self.update_client)
-        self.actualizar_btn.grid(row=0, column=0, padx=5)
-        Button(frame, text="Cancelar", command=self.destroy).grid(row=0, column=1, padx=5)
-        
-        self.validaciones = [True, True]  # DNI no editable
-        self.nombre.bind("<KeyRelease>", lambda ev: self.validate(ev, 0))
-        self.apellido.bind("<KeyRelease>", lambda ev: self.validate(ev, 1))
-
-    def validate(self, event, index):
-        valor = event.widget.get()
-        valido = valor.isalpha() and 2 <= len(valor) <= 30
-        event.widget.config(bg="green" if valido else "red")
-        self.validaciones[index] = valido
-        self.actualizar_btn.config(state=NORMAL if all(self.validaciones) else DISABLED)
-
-    def update_client(self):
-        dni, nombre, apellido = self.dni.get(), self.nombre.get(), self.apellido.get()
-        db.Clientes.modificar(dni, nombre, apellido)
-        self.parent.treeview.item(self.parent.treeview.focus(), values=(dni, nombre, apellido))
-        self.destroy()
+        # Borrar
+        with gr.Column():
+            gr.Markdown("### Borrar Cliente")
+            dni_borrar = gr.Textbox(label="DNI")
+            borrar_btn = gr.Button("Borrar")
+            borrar_output = gr.Textbox(label="Resultado")
+            borrar_btn.click(borrar_cliente, inputs=dni_borrar, outputs=[borrar_output, tabla])
 
 if __name__ == "__main__":
-    app = MainWindow()
-    app.mainloop()
+    demo.launch()
