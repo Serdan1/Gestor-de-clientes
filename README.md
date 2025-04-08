@@ -13,7 +13,7 @@ Un programa para gestionar clientes con opciones de listar, buscar, añadir, mod
 
 ## Instalación
 1. Clona el repositorio desde GitHub:
-git clone <URL_del_repositorio>
+git clone https://github.com/Serdan1/Gestor-de-clientes
    cd Gestor_Clientes
 
 2. Crea y activa un entorno virtual:
@@ -36,28 +36,6 @@ Esto abrirá una interfaz web en tu navegador (ej. `http://127.0.0.1:7860`). En 
 - **Ejecutar pruebas**: 
 pytest -v
 
-
-
-## Estructura del Proyecto
-Aquí tienes un diagrama de la estructura del proyecto:
-
-Gestor_Clientes/
-├── gestor/              # Módulos principales
-│   ├── init.py     # Marca el directorio como paquete
-│   ├── run.py         # Punto de entrada (elige modo terminal o Gradio)
-│   ├── menu.py        # Interfaz de terminal
-│   ├── database.py    # Gestión de datos (clientes y CSV)
-│   ├── helpers.py     # Funciones auxiliares (validaciones, limpieza)
-│   └── ui.py          # Interfaz web con Gradio
-├── tests/              # Pruebas unitarias
-│   ├── init.py    # Marca el directorio como paquete
-│   └── test_database.py  # Tests para database.py
-├── clientes.csv        # Archivo de datos persistentes
-├── requirements.txt    # Dependencias del proyecto
-└── README.md           # Documentación
-
-
-
 ## Funcionalidades
 - **Listar clientes**: Muestra todos los clientes en una tabla.
 - **Buscar cliente**: Busca un cliente por DNI.
@@ -76,21 +54,25 @@ Gestor_Clientes/
 Creado por Daniel Serrano Martin.
 
 
-graph TD
-    A[Gestor_Clientes] --> B[gestor]
-    A --> C[tests]
-    A --> D[clientes.csv]
-    A --> E[requirements.txt]
-    A --> F[README.md]
-    B --> G[__init__.py]
-    B --> H[run.py]
-    B --> I[menu.py]
-    B --> J[database.py]
-    B --> K[helpers.py]
-    B --> L[ui.py]
-    C --> M[__init__.py]
-    C --> N[test_database.py]
 
+## Estructura del Proyecto
+Aquí tienes un diagrama de la estructura del proyecto:
+
+```mermaid
+graph TD
+  A[Gestor_Clientes] --> B[gestor]
+  A --> C[tests]
+  A --> D[clientes.csv]
+  A --> E[requirements.txt]
+  A --> F[README.md]
+  B --> G[__init__.py]
+  B --> H[run.py]
+  B --> I[menu.py]
+  B --> J[database.py]
+  B --> K[helpers.py]
+  B --> L[ui.py]
+  C --> M[__init__.py]
+  C --> N[test_database.py]
 
 
 
