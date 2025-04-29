@@ -58,14 +58,14 @@ Creado por Daniel Serrano Martin.
 ## Estructura del Proyecto
 Aquí tienes un diagrama de la estructura del proyecto:
 
-mermaid
+```mermaid
 graph TD
   A[Gestor_Clientes] --> B[gestor]
   A --> C[tests]
   A --> D[clientes.csv]
   A --> E[requirements.txt]
   A --> F[README.md]
-  A --> O[main.py]  # Nuevo archivo en la raíz
+  A --> O[main.py]
   B --> G[__init__.py]
   B --> H[run.py]
   B --> I[menu.py]
@@ -74,11 +74,8 @@ graph TD
   B --> L[ui.py]
   C --> M[__init__.py]
   C --> N[test_database.py]
-  
-  # Relaciones funcionales: main.py ejecuta el sistema
-  O -->|ejecuta| I  # main.py puede llamar a menu.py (interfaz de consola)
-  O -->|ejecuta| L  # main.py puede llamar a ui.py (interfaz gráfica)
-
+  O -->|ejecuta| I
+  O -->|ejecuta| L
 
 
 
