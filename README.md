@@ -58,7 +58,7 @@ Creado por Daniel Serrano Martin.
 ## Estructura del Proyecto
 Aquí tienes un diagrama de la estructura del proyecto:
 
-
+mermaid
 graph TD
   A[Gestor_Clientes] --> B[gestor]
   A --> C[tests]
