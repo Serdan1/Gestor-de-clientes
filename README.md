@@ -26,11 +26,11 @@ pip install -r requirements.txt
 
 ## Uso
 - **Modo terminal**:
-  python gestor/run.py -t
+  python main.py
 
 
 - **Modo web (Gradio)**:
-python gestor/run.py
+python main.py
 Esto abrirá una interfaz web en tu navegador (ej. `http://127.0.0.1:7860`). En entornos como Codespaces, también proporciona un enlace público.
 
 - **Ejecutar pruebas**: 
@@ -58,13 +58,14 @@ Creado por Daniel Serrano Martin.
 ## Estructura del Proyecto
 Aquí tienes un diagrama de la estructura del proyecto:
 
-```mermaid
+
 graph TD
   A[Gestor_Clientes] --> B[gestor]
   A --> C[tests]
   A --> D[clientes.csv]
   A --> E[requirements.txt]
   A --> F[README.md]
+  A --> O[main.py]  # Nuevo archivo en la raíz
   B --> G[__init__.py]
   B --> H[run.py]
   B --> I[menu.py]
@@ -73,6 +74,10 @@ graph TD
   B --> L[ui.py]
   C --> M[__init__.py]
   C --> N[test_database.py]
+  
+  # Relaciones funcionales: main.py ejecuta el sistema
+  O -->|ejecuta| I  # main.py puede llamar a menu.py (interfaz de consola)
+  O -->|ejecuta| L  # main.py puede llamar a ui.py (interfaz gráfica)
 
 
 
